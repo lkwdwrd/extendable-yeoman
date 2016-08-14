@@ -1,0 +1,46 @@
+{
+  "name": "extendable-yeoman",
+  "version": "0.1.0",
+  "description": "Create Yeoman generators that support extensions and dynamic sub-generators automatically.",
+  "license": "MIT",
+  "main": "lib/main.js",
+  "repository": "https://github.com/lkwdwrd/extendable-yeoman.git",
+  "author": {
+    "name": "Luke Woodward",
+    "email": "woodward.lucas@gmail.com",
+    "url": "https://lkwdwrd.com"
+  },
+  "contributors": [
+    {
+      "name": "Luke Woodward",
+      "email": "woodward.lucas@gmail.com",
+      "url": "https://lkwdwrd.com"
+    }
+  ],
+  "engines": {
+    "node": ">=4.0.0"
+  },
+  "scripts": {
+    "test": "mocha 'test/**/**/*.js'"
+  },
+  "files": [
+    "app"
+  ],
+  "keywords": [
+    "yeoman",
+    "generator",
+    "plugin",
+    "extension",
+    "dynamic",
+    "sub-generator",
+    "base"
+  ],
+  "dependencies": {
+  },
+  "devDependencies": {
+    "async": "",
+    "chai": "^3.5.0",
+    "mocha": "*",
+    "mock-fs": "^3.9.0"
+  }
+}
