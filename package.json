@@ -1,6 +1,6 @@
 {
   "name": "extendable-yeoman",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Create Yeoman generators that support extensions and dynamic sub-generators automatically.",
   "license": "MIT",
   "main": "lib/main.js",
@@ -36,6 +36,9 @@
     "base"
   ],
   "dependencies": {
+    "globby": "^6.0.0",
+    "lodash": "^4.15.0",
+    "yeoman-generator": "^0.24.1"
   },
   "devDependencies": {
     "async": "",
