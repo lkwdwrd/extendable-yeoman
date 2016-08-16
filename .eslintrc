@@ -16,7 +16,7 @@
     "consistent-return": 0,
     "indent": [
       2,
-      2,
+      "tab",
       {
         "SwitchCase": 1
       }
@@ -24,7 +24,7 @@
     "no-multiple-empty-lines": [
       2,
       {
-        "max": 2
+        "max": 1
       }
     ],
     "no-use-before-define": [
@@ -52,7 +52,18 @@
       "all"
     ],
     "eol-last": 2,
-    "keyword-spacing": 2,
+    "keyword-spacing": [
+      2,
+      {
+        "before": false,
+        "after": false,
+        "overrides": {
+          "return": {
+            "after": true
+          }
+        }
+      }
+    ],
     "key-spacing": [
       2,
       {

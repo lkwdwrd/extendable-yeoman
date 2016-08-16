@@ -22,7 +22,8 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha --reporter spec 'test/**/*.js'",
-    "coverage": "./node_modules/.bin/istanbul cover node_modules/.bin/_mocha -- -R spec test/**/*.js"
+    "coverage": "./node_modules/.bin/istanbul cover node_modules/.bin/_mocha -- -R spec test/**/*.js",
+    "lint": "./node_modules/.bin/eslint lib/**/*.js"
   },
   "files": [
     "app"
@@ -43,6 +44,7 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "eslint": "^3.3.1",
     "mocha": "^3.0.2",
     "mocha-istanbul": "^0.3.0",
     "yeoman-test": "^1.4.0"
