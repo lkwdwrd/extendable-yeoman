@@ -21,7 +21,8 @@
     "node": ">=4.0.0"
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha --reporter spec 'test/**/*.js'"
+    "test": "./node_modules/.bin/mocha --reporter spec 'test/**/*.js'",
+    "coverage": "./node_modules/.bin/istanbul cover node_modules/.bin/_mocha -- -R spec test/**/*.js"
   },
   "files": [
     "app"
@@ -43,6 +44,7 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "mocha": "^3.0.2",
+    "mocha-istanbul": "^0.3.0",
     "yeoman-test": "^1.4.0"
   }
 }
