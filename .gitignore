@@ -1,4 +1,5 @@
 node_modules
+!/test/tools/glob/node_modules
 coverage
 temp
 .idea

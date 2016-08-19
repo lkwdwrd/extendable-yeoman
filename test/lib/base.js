@@ -175,6 +175,173 @@ describe('The base object', function () {
 			});
 			// App is returned
 			assert.isTrue(check);
+			// Run function doesn't error when no cb is sent
+			assert.doesNotThrow(this.app.run);
+		});
+	});
+	describe('#_gatherExtensions', function(){
+		it ('globs and records available extensions, exlcuding node_modules', function(){
+			// Kill the normal constructor and mock some methods.
+			var fileRoot = path.join(__dirname, '../tools/glob');
+			var fakeBase = Base.extend({
+				_generatorName: 'dummy',
+				constructor: function(){},
+				_searchForExtensions: function(paths){
+					assert.isTrue(paths)
+					return [fileRoot];
+				},
+				_getNpmPaths: function(){
+					return true;
+				}
+			});
+			// Create an instance
+			var app = helpers.createGenerator('dummy:app',[[fakeBase, 'dummy:app']]);
+			// Set up a simple Yeoman Env mock.
+			app.env = {
+				namespace: function(value){return path.basename(path.dirname(value));}
+			};
+			// Run the method
+			app._gatherExtensions();
+			// Verify
+			// Note the glob for root and for extensions both pick up the
+			// extensions/ folder index file. This is good since it also
+			// tests searching for sub-sub-generators.
+			// While there is a fake node_modules folder that should not be
+			// in the final results.
+			assert.deepEqual(
+				app._extensions,
+				{
+					'dummy:testing': [
+						path.join(fileRoot, 'testing/index.js')
+					],
+					'dummy:ext-testing': [
+						path.join(fileRoot, 'extensions/ext-testing/index.js'),
+						path.join(fileRoot, 'extensions/ext-testing/index.js')
+					],
+					'dummy:lib-ext-testing': [
+						path.join(fileRoot, 'lib/extensions/lib-ext-testing/index.js')
+					]
+				}
+			);
+		});
+	});
+	describe('#_searchForExtensions', function(){
+		it ('globs node_modules folders for all relevant extensions', function(){
+			// Kill the normal constructor and mock some methods.
+			var fileRoot = path.join(__dirname, '../tools/glob/node_modules');
+			var fakeBase = Base.extend({
+				constructor: function(){},
+				_getExtensionPrefixes: function(){return ['ext-dummy-*'];}
+			});
+			// Create an instance
+			var app = helpers.createGenerator('dummy:app',[[fakeBase, 'dummy:app']]);
+			// Run the method
+			var results = app._searchForExtensions([fileRoot, '']);
+			// Verify
+			assert.deepEqual(
+				results,
+				[path.join(fileRoot,'ext-dummy-test')]
+			);
+		});
+	});
+	describe('#_getNpmPaths', function(){
+		before(function(){
+			// Kill the normal constructor
+			this.fakeBase = Base.extend({
+				constructor: function(){}
+			});
+			// Create a fake path for use in testing.
+			this.fakePath = path.join('a', 'nonexistant', 'path', 'for', 'testing');
+		});
+		beforeEach(function(){
+			// Create a fake process object for each test.
+			this.process = {
+				platform: '',
+				env: {},
+				argv: [],
+				cwd: function(){return path.join('some', 'random', 'path');}
+			};
+		});
+		it('returns an array for the basic paths', function(){
+			// Create an instance
+			var app = helpers.createGenerator('dummy:app',[[this.fakeBase, 'dummy:app']]);
+			// Run the method
+			var results = app._getNpmPaths(this.process, this.fakePath);
+			// Verify results
+			assert.deepEqual(results, [
+				path.join(path.sep, 'some', 'random', 'path', 'node_modules'),
+				path.join(path.sep, 'some', 'random', 'node_modules'),
+				path.join(path.sep, 'some', 'node_modules'),
+				path.join(path.sep, 'usr', 'lib', 'node_modules'),
+				path.join('a', 'nonexistant', 'path'),
+				path.join('a')
+			]);
+		});
+		it('returns an array with the NVM_PATH when present', function(){
+			// Add an NVM path
+			this.process.env.NVM_PATH = path.join('the', 'nvm', 'path');
+			// Create an instance
+			var app = helpers.createGenerator('dummy:app',[[this.fakeBase, 'dummy:app']]);
+			// Run the method
+			var results = app._getNpmPaths(this.process, this.fakePath);
+			// Verify results
+			assert.include(results, path.join('the', 'nvm', 'node_modules'));
+		});
+		it('returns the NODE_PATH path when present', function(){
+			// Add an NVM path
+			this.process.env.NODE_PATH = path.join('the', 'node', 'path');
+			// Create an instance
+			var app = helpers.createGenerator('dummy:app',[[this.fakeBase, 'dummy:app']]);
+			// Run the method
+			var results = app._getNpmPaths(this.process, this.fakePath);
+			// Verify results
+			assert.include(results, path.join('the', 'node', 'path'));
+		});
+		it('supports linked dependencies', function(){
+			// Add an NVM path
+			this.process.argv = [null, path.join( 'argv', 'special', 'linked', 'path')];
+			// Create an instance
+			var app = helpers.createGenerator('dummy:app',[[this.fakeBase, 'dummy:app']]);
+			// Run the method
+			var results = app._getNpmPaths(this.process, this.fakePath);
+			// Verify results
+			assert.include(results, 'argv');
+		});
+		it('supports win32 paths', function(){
+			// Add an win32 flag
+			this.process.platform = 'win32';
+			this.process.env.APPDATA = path.join('another', 'dummy', 'path');
+			// Create an instance
+			var app = helpers.createGenerator('dummy:app',[[this.fakeBase, 'dummy:app']]);
+			// Run the method
+			var results = app._getNpmPaths(this.process, this.fakePath);
+			// Verify results
+			assert.include(results, path.join('another', 'dummy', 'path', 'npm', 'node_modules'));
+			assert.notInclude(results, path.join('usr', 'lib', 'node_modules'));
+			assert.deepEqual(results.slice(0,3),[
+				path.join('some', 'random', 'path', 'node_modules'),
+				path.join('some', 'random', 'node_modules'),
+				path.join('some', 'node_modules')
+			]);
+		});
+	});
+	describe('#_getExtensionPrefixes', function(){
+		it('returns an array of glob statements', function(){
+			var fakeBase = Base.extend({
+				_generatorName: 'dummy',
+				constructor: function(){}
+			});
+			// Create an instance
+			var app = helpers.createGenerator('dummy:app',[[fakeBase, 'dummy:app']]);
+			// Run the method
+			var results = app._getExtensionPrefixes();
+			assert.deepEqual(
+				results,
+				[
+					'ext-dummy-*',
+					'@*/ext-dummy-*'
+				]
+			);
 		});
 	});
 });
