@@ -1,6 +1,6 @@
 {
   "name": "extendable-yeoman",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Create Yeoman generators that support extensions and dynamic sub-generators automatically.",
   "license": "MIT",
   "main": "lib/main.js",
@@ -27,7 +27,7 @@
     "lint": "./node_modules/.bin/eslint lib/**/*.js"
   },
   "files": [
-    "app"
+    "lib"
   ],
   "keywords": [
     "yeoman",
