@@ -1,6 +1,9 @@
 node_modules
-!/test/tools/glob/node_modules
 coverage
 src
+test
 temp
-.idea
+.editorconfig
+.babelrc
+.eslintrc
+.travis.yml

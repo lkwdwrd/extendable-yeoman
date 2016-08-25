@@ -3,4 +3,5 @@ node_modules
 coverage
 lib
 !/test/lib
+!/test/tools/glob/lib
 temp
