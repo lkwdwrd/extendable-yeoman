@@ -39,10 +39,10 @@ const Base = Yeoman.Base.extend({
 	/**
 	 * Initializes any extensions or runs any dynamic subgenerators.
 	 */
-	_initExtensions: function(){
+	_initExtensions: function(argv = process.argv){
 		let generator = false;
 		let ns = this.options.namespace;
-		const rawNS = process.argv[2].split(/:/);
+		const rawNS = argv[2].split(/:/);
 		const last = rawNS.pop();
 
 		if(last[0] === '/'){

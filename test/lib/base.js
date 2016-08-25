@@ -6,36 +6,34 @@ import Base from '../../lib/base';
 describe('The base object', function () {
 	describe('has some properties', function(){
 		it('_extensionLookups is an array of strings', function(){
-			var app = helpers.createGenerator('dummy:app',[[Base, 'dummy:app']]);
+			const app = helpers.createGenerator('dummy:app', [[Base, 'dummy:app']]);
 			assert.isArray(app._extensionLookups);
-			app._extensionLookups.forEach(function(item){
-				assert.isString(item);
-			});
+			app._extensionLookups.forEach(item => assert.isString(item));
 		});
 		it('_extensions is an empty object', function(){
-			var app = helpers.createGenerator('dummy:app',[[Base, 'dummy:app']]);
+			var app = helpers.createGenerator('dummy:app', [[Base, 'dummy:app']]);
 			assert.isObject(app._extensions);
 			assert.deepEqual({}, app._extensions);
 		});
 	});
 	describe('constructor', function(){
 		it('sets the main generator name', function(){
-			var app = helpers.createGenerator('dummy:app',[[Base, 'dummy:app']]);
-			assert.equal('dummy',app._generatorName);
+			const app = helpers.createGenerator('dummy:app', [[Base, 'dummy:app']]);
+			assert.equal('dummy', app._generatorName);
 		});
 		it('runs the yeoman constructor before gathering extensions', function(){
-			var fakeBase = Base.extend({
+			const fakeBase = Base.extend({
 				_gatherExtensions: function(){assert.isDefined(this.env);},
 				_initExtensions: function(){assert.isDefined(this.env);}
 			});
-			helpers.createGenerator('dummy:app',[[fakeBase, 'dummy:app']]);
+			helpers.createGenerator('dummy:app', [[fakeBase, 'dummy:app']]);
 		});
-		it('runs gather extensions befor intializing them',function(){
-			var fakeBase = Base.extend({
+		it('runs gather extensions befor intializing them', function(){
+			const fakeBase = Base.extend({
 				_gatherExtensions: function(){this.testProp = true;},
-				_initExtensions: function(){assert.isOk(this.testProp);}
+				_initExtensions: function(){assert.isTrue(this.testProp);}
 			});
-			helpers.createGenerator('dummy:app',[[fakeBase, 'dummy:app']]);
+			helpers.createGenerator('dummy:app', [[fakeBase, 'dummy:app']]);
 		});
 	});
 	describe('#_initExtensions', function(){
@@ -44,46 +42,35 @@ describe('The base object', function () {
 			this.fakeBase = Base.extend({
 				constructor: function(){}
 			});
-			// Stash the actual argv since we'll be stomping it for these tests.
-			this._storedArgV = process.argv;
 			// Set up a simple Yeoman Env mock.
 			this.envMock = {
-				register: envRegister.bind(this),
-				run: envRun.bind(this),
-				error: envError.bind(this)
+				register: (filePath, namespace) => {
+					this.envMockState.register.filePath.push(filePath);
+					this.envMockState.register.namespace.push(namespace);
+				},
+				run: (args, options) => {
+					this.envMockState.run.args.push(args);
+					this.envMockState.run.options.push(options);
+				},
+				error: (message) => {
+					this.envMockState.error = message;
+				}
 			};
-			function envRegister(filePath, namespace){
-				this.envMockState.register.filePath.push(filePath);
-				this.envMockState.register.namespace.push(namespace);
-			}
-			function envRun(args, options){
-				this.envMockState.run.args.push(args);
-				this.envMockState.run.options.push(options);
-			}
-			function envError(message){
-				this.envMockState.error = message;
-			}
 		});
 		beforeEach(function(){
-			// Reset argv so test don't bleed into each other.
-			process.argv = [];
 			// Reset recorded env mock values so test don't bleed into each other.
 			this.envMockState = {
-				register: {filePath:[], namespace:[]},
-				run: {args:[], options:[]},
+				register: {filePath: [], namespace: []},
+				run: {args: [], options: []},
 				error: false
 			};
 			// Create a new instance of app for use
-			this.app = helpers.createGenerator('dummy:app',[[this.fakeBase, 'dummy:app']]);
+			this.app = helpers.createGenerator('dummy:app', [[this.fakeBase, 'dummy:app']]);
 			this.app.options = {namespace: 'dummy:app'};
-		});
-		after(function(){
-			// Clean up after ourselves restoring the actual argv after all tests run.
-			process.argv = this._storedArgV;
 		});
 		it('initializes extensions in the same namespace as the called app', function(){
 			// Mock out state
-			process.argv = [null, null, 'dummy:app'];
+			const argv = [null, null, 'dummy:app'];
 			this.app._extensions = {
 				'dummy:app': [
 					path.join(__dirname, '../tools/test-ext1.js'),
@@ -94,31 +81,31 @@ describe('The base object', function () {
 				]
 			};
 			// Run the function
-			var result = this.app._initExtensions();
+			var results = this.app._initExtensions(argv);
 			// Verify State - extensions 1 and 2 should run, 3 should not as it's
 			// in a different namespace.
 			assert.isTrue(this.app.testExt1);
 			assert.isTrue(this.app.testExt2);
 			assert.isUndefined(this.app.testExt3);
-			assert.equal(result, this.app);
+			assert.equal(results, this.app);
 		});
 		it('returns false when no extensions exist in the called namespace', function(){
 			//Mock out state
-			process.argv = [null, null, 'dummy:app'];
+			const argv = [null, null, 'dummy:app'];
 			this.app._extensions = {
 				'dummy:nope': [
 					path.join(__dirname, '../tools/test-ext3.js')
 				]
 			};
 			// Run the function
-			var result = this.app._initExtensions();
+			var results = this.app._initExtensions(argv);
 			// Verify state - no extensions run, false returned.
-			assert.isFalse(result);
+			assert.isFalse(results);
 			assert.isUndefined(this.app.testExt3);
 		});
 		it('runs slash generatros when they exist in an extension', function(){
 			//Mock out state
-			process.argv = [null, null, 'dummy:/testing'];
+			const argv = [null, null, 'dummy:/testing'];
 			this.app.env = this.envMock;
 			this.app._extensions = {
 				'dummy:testing': [
@@ -129,46 +116,46 @@ describe('The base object', function () {
 			this.app.args = ['testing-arg'];
 			this.app.options = {test: 'option'};
 			// Run the function
-			var result = this.app._initExtensions();
+			var results = this.app._initExtensions(argv);
 			// Verify state - slash generators run, app returned.
 			// Register should have been called for exactly 2 generators
 			assert.lengthOf(this.envMockState.register.filePath, 2);
-			assert.equal('path1', this.envMockState.register.filePath[0]);
-			assert.equal('path2', this.envMockState.register.filePath[1]);
+			assert.equal(this.envMockState.register.filePath[0], 'path1');
+			assert.equal(this.envMockState.register.filePath[1], 'path2');
 			assert.lengthOf(this.envMockState.register.namespace, 2);
-			assert.equal('dummy:testing0', this.envMockState.register.namespace[0]);
-			assert.equal('dummy:testing1', this.envMockState.register.namespace[1]);
+			assert.equal(this.envMockState.register.namespace[0], 'dummy:testing0');
+			assert.equal(this.envMockState.register.namespace[1], 'dummy:testing1');
 			// Run should have been called for exactly 2 generators
 			assert.lengthOf(this.envMockState.run.args, 2);
-			assert.deepEqual(['dummy:testing0', 'testing-arg'], this.envMockState.run.args[0]);
-			assert.deepEqual(['dummy:testing1', 'testing-arg'], this.envMockState.run.args[1]);
+			assert.deepEqual(this.envMockState.run.args[0], ['dummy:testing0', 'testing-arg']);
+			assert.deepEqual(this.envMockState.run.args[1], ['dummy:testing1', 'testing-arg']);
 			assert.lengthOf(this.envMockState.run.options, 2);
-			assert.deepEqual({test: 'option'}, this.envMockState.run.options[0]);
-			assert.deepEqual({test: 'option'}, this.envMockState.run.options[1]);
+			assert.deepEqual(this.envMockState.run.options[0], {test: 'option'});
+			assert.deepEqual(this.envMockState.run.options[1], {test: 'option'});
 			// App is returned
-			assert.equal(this.app, result);
+			assert.equal(results, this.app);
 		});
 		it('throws an error when a slash generator is run that does not exist', function(){
 			//Mock out state
-			process.argv = [null, null, 'dummy:/notexists'];
+			const argv = [null, null, 'dummy:/notexists'];
 			this.app.env = this.envMock;
 			this.app._extensions = {};
 			// Run the function
-			this.app._initExtensions();
+			this.app._initExtensions(argv);
 			// Verify the error method was called
 			assert.equal(
-				'The dynamic sub-generator dummy:notexists does not exist.',
-				this.envMockState.error
+				this.envMockState.error,
+				'The dynamic sub-generator dummy:notexists does not exist.'
 			);
 		});
 		it('overrides the run method when a slash generator is run', function(){
 			//Mock out state
-			process.argv = [null, null, 'dummy:/testing'];
+			const argv = [null, null, 'dummy:/testing'];
 			this.app.env = this.envMock;
 			this.app._extensions = {'dummy:testing': ['path1']};
 			// Run the function
-			this.app._initExtensions();
-			var check = false;
+			this.app._initExtensions(argv);
+			let check = false;
 			this.app.run(function(){
 				check = true;
 			});
@@ -179,14 +166,14 @@ describe('The base object', function () {
 		});
 	});
 	describe('#_gatherExtensions', function(){
-		it ('globs and records available extensions, exlcuding node_modules', function(){
+		it('globs and records available extensions, exlcuding node_modules', function(){
 			// Kill the normal constructor and mock some methods.
-			var fileRoot = path.join(__dirname, '../tools/glob');
-			var fakeBase = Base.extend({
+			const fileRoot = path.join(__dirname, '../tools/glob');
+			const fakeBase = Base.extend({
 				_generatorName: 'dummy',
 				constructor: function(){},
 				_searchForExtensions: function(paths){
-					assert.isTrue(paths)
+					assert.isTrue(paths);
 					return [fileRoot];
 				},
 				_getNpmPaths: function(){
@@ -194,10 +181,10 @@ describe('The base object', function () {
 				}
 			});
 			// Create an instance
-			var app = helpers.createGenerator('dummy:app',[[fakeBase, 'dummy:app']]);
+			var app = helpers.createGenerator('dummy:app', [[fakeBase, 'dummy:app']]);
 			// Set up a simple Yeoman Env mock.
 			app.env = {
-				namespace: function(value){return path.basename(path.dirname(value));}
+				namespace: value => path.basename(path.dirname(value))
 			};
 			// Run the method
 			app._gatherExtensions();
@@ -225,21 +212,21 @@ describe('The base object', function () {
 		});
 	});
 	describe('#_searchForExtensions', function(){
-		it ('globs node_modules folders for all relevant extensions', function(){
+		it('globs node_modules folders for all relevant extensions', function(){
 			// Kill the normal constructor and mock some methods.
-			var fileRoot = path.join(__dirname, '../tools/glob/node_modules');
-			var fakeBase = Base.extend({
+			const fileRoot = path.join(__dirname, '../tools/glob/node_modules');
+			const fakeBase = Base.extend({
 				constructor: function(){},
 				_getExtensionPrefixes: function(){return ['ext-dummy-*'];}
 			});
 			// Create an instance
-			var app = helpers.createGenerator('dummy:app',[[fakeBase, 'dummy:app']]);
+			const app = helpers.createGenerator('dummy:app', [[fakeBase, 'dummy:app']]);
 			// Run the method
-			var results = app._searchForExtensions([fileRoot, '']);
+			const results = app._searchForExtensions([fileRoot, '']);
 			// Verify
 			assert.deepEqual(
 				results,
-				[path.join(fileRoot,'ext-dummy-test')]
+				[path.join(fileRoot, 'ext-dummy-test')]
 			);
 		});
 	});
@@ -263,9 +250,9 @@ describe('The base object', function () {
 		});
 		it('returns an array for the basic paths', function(){
 			// Create an instance
-			var app = helpers.createGenerator('dummy:app',[[this.fakeBase, 'dummy:app']]);
+			const app = helpers.createGenerator('dummy:app', [[this.fakeBase, 'dummy:app']]);
 			// Run the method
-			var results = app._getNpmPaths(this.process, this.fakePath);
+			const results = app._getNpmPaths(this.process, this.fakePath);
 			// Verify results
 			assert.deepEqual(results, [
 				path.join(path.sep, 'some', 'random', 'path', 'node_modules'),
@@ -280,9 +267,9 @@ describe('The base object', function () {
 			// Add an NVM path
 			this.process.env.NVM_PATH = path.join('the', 'nvm', 'path');
 			// Create an instance
-			var app = helpers.createGenerator('dummy:app',[[this.fakeBase, 'dummy:app']]);
+			const app = helpers.createGenerator('dummy:app', [[this.fakeBase, 'dummy:app']]);
 			// Run the method
-			var results = app._getNpmPaths(this.process, this.fakePath);
+			const results = app._getNpmPaths(this.process, this.fakePath);
 			// Verify results
 			assert.include(results, path.join('the', 'nvm', 'node_modules'));
 		});
@@ -290,9 +277,9 @@ describe('The base object', function () {
 			// Add an NVM path
 			this.process.env.NODE_PATH = path.join('the', 'node', 'path');
 			// Create an instance
-			var app = helpers.createGenerator('dummy:app',[[this.fakeBase, 'dummy:app']]);
+			const app = helpers.createGenerator('dummy:app', [[this.fakeBase, 'dummy:app']]);
 			// Run the method
-			var results = app._getNpmPaths(this.process, this.fakePath);
+			const results = app._getNpmPaths(this.process, this.fakePath);
 			// Verify results
 			assert.include(results, path.join('the', 'node', 'path'));
 		});
@@ -300,9 +287,9 @@ describe('The base object', function () {
 			// Add an NVM path
 			this.process.argv = [null, path.join( 'argv', 'special', 'linked', 'path')];
 			// Create an instance
-			var app = helpers.createGenerator('dummy:app',[[this.fakeBase, 'dummy:app']]);
+			const app = helpers.createGenerator('dummy:app', [[this.fakeBase, 'dummy:app']]);
 			// Run the method
-			var results = app._getNpmPaths(this.process, this.fakePath);
+			const results = app._getNpmPaths(this.process, this.fakePath);
 			// Verify results
 			assert.include(results, 'argv');
 		});
@@ -311,13 +298,13 @@ describe('The base object', function () {
 			this.process.platform = 'win32';
 			this.process.env.APPDATA = path.join('another', 'dummy', 'path');
 			// Create an instance
-			var app = helpers.createGenerator('dummy:app',[[this.fakeBase, 'dummy:app']]);
+			const app = helpers.createGenerator('dummy:app', [[this.fakeBase, 'dummy:app']]);
 			// Run the method
-			var results = app._getNpmPaths(this.process, this.fakePath);
+			const results = app._getNpmPaths(this.process, this.fakePath);
 			// Verify results
 			assert.include(results, path.join('another', 'dummy', 'path', 'npm', 'node_modules'));
 			assert.notInclude(results, path.join('usr', 'lib', 'node_modules'));
-			assert.deepEqual(results.slice(0,3),[
+			assert.deepEqual(results.slice(0, 3), [
 				path.join('some', 'random', 'path', 'node_modules'),
 				path.join('some', 'random', 'node_modules'),
 				path.join('some', 'node_modules')
@@ -326,14 +313,14 @@ describe('The base object', function () {
 	});
 	describe('#_getExtensionPrefixes', function(){
 		it('returns an array of glob statements', function(){
-			var fakeBase = Base.extend({
+			const fakeBase = Base.extend({
 				_generatorName: 'dummy',
 				constructor: function(){}
 			});
 			// Create an instance
-			var app = helpers.createGenerator('dummy:app',[[fakeBase, 'dummy:app']]);
+			const app = helpers.createGenerator('dummy:app', [[fakeBase, 'dummy:app']]);
 			// Run the method
-			var results = app._getExtensionPrefixes();
+			const results = app._getExtensionPrefixes();
 			assert.deepEqual(
 				results,
 				[

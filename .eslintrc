@@ -13,7 +13,10 @@
     ],
     "brace-style": [
       2,
-      "1tbs"
+      "1tbs",
+      {
+        "allowSingleLine": true
+      }
     ],
     "consistent-return": 0,
     "indent": [
