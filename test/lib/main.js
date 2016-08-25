@@ -5,11 +5,11 @@ import Base from '../../lib/base';
 
 chai.should();
 
-describe('The main object', function () {
-	it('contains a Yeoman reference', function(){
+describe('The main object', () => {
+	it('contains a Yeoman reference', () => {
 		main.Yeoman.should.equal(Yeoman);
 	});
-	it('contains the extended Base object', function(){
+	it('contains the extended Base object', () => {
 		main.Base.should.equal(Base);
 	});
 });
