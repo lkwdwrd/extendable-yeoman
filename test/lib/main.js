@@ -7,6 +7,6 @@ describe('The main object', function () {
 		assert.deepEqual(main.Yeoman, require('yeoman-generator'));
 	});
 	it('contains the extended Base object', function(){
-		assert.deepEqual(main.Base, require('../../lib/base'));
+		assert.deepEqual(main.Base, require('../../lib/base').default);
 	});
 });

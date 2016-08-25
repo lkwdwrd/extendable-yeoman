@@ -1,6 +1,8 @@
 {
   "extends": "eslint:recommended",
+  "parser": "babel-eslint",
   "env": {
+    "es6": true,
     "node": true,
     "mocha": true
   },
@@ -59,6 +61,16 @@
         "after": false,
         "overrides": {
           "return": {
+            "after": true
+          },
+          "import": {
+            "after": true
+          },
+          "from": {
+            "before": true,
+            "after": true
+          },
+          "export": {
             "after": true
           }
         }

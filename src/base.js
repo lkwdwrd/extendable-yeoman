@@ -5,19 +5,17 @@
  * version of it that supports a plugin architecture allowing plugins to
  * be used with generators built on top of it.
  */
-'use strict';
 
-// Require dependencies
-var YeomanBase = require('yeoman-generator').Base;
-var compact = require('lodash.compact');
-var path = require('path');
-var globby = require('globby');
+// Import dependencies
+import Yeoman from 'yeoman-generator';
+import path from 'path';
+import globby from 'globby';
 
 /**
  * The Pluggable Yo base object
  *
  */
-var ExtendableBase = YeomanBase.extend({
+const Base = Yeoman.Base.extend({
 	_extensionLookups: [
 		'.',
 		'extensions',
@@ -31,7 +29,7 @@ var ExtendableBase = YeomanBase.extend({
 	 */
 	constructor: function(){
 		// Run the baser constructor.
-		YeomanBase.apply(this, arguments);
+		Yeoman.Base.apply(this, arguments);
 		// Set the name
 		this._generatorName = this.options.namespace.split(':')[0];
 		// Find Extensions
@@ -42,12 +40,10 @@ var ExtendableBase = YeomanBase.extend({
 	 * Initializes any extensions or runs any dynamic subgenerators.
 	 */
 	_initExtensions: function(){
-		var i;
-		var length;
-		var generator = false;
-		var ns = this.options.namespace;
-		var rawNS = process.argv[2].split(/:/);
-		var last = rawNS.pop();
+		let generator = false;
+		let ns = this.options.namespace;
+		const rawNS = process.argv[2].split(/:/);
+		const last = rawNS.pop();
 
 		if(last[0] === '/'){
 			ns = rawNS.concat(last.slice(1)).join(':');
@@ -60,11 +56,11 @@ var ExtendableBase = YeomanBase.extend({
 		}
 		if(!(ns in this._extensions)){
 			if(generator){
-				this.env.error('The dynamic sub-generator ' + ns + ' does not exist.');
+				this.env.error(`The dynamic sub-generator ${ns} does not exist.`);
 			}
 			return false;
 		}
-		for(i = 0, length = this._extensions[ns].length; i < length; i++){
+		for(let i = 0, length = this._extensions[ns].length; i < length; i++){
 			if(generator){
 				this.env.register(this._extensions[ns][i], ns + i);
 				this.env.run([ns + i].concat(this.args), this.options);
@@ -90,26 +86,26 @@ var ExtendableBase = YeomanBase.extend({
 	 * automatically invoked when the `dummy:yo` generator is invoked.
 	 */
 	_gatherExtensions: function(){
-		var extensionModules = this._searchForExtensions(this._getNpmPaths(process, __dirname));
-		var patterns = [];
+		const extensionModules = this._searchForExtensions(this._getNpmPaths());
+		const patterns = [];
 
 		this._extensionLookups.forEach(function(lookup){
 			extensionModules.forEach(function(modulePath){
 				patterns.push(path.join(modulePath, lookup));
 			});
 		});
-		patterns.forEach(function(pattern){
+		patterns.forEach(pattern => {
 			globby.sync(
 				['*/index.js', '*/*/index.js', '!node_modules/*/index.js'],
 				{cwd: pattern}
-			).forEach(function(filename){
-				var ns = this._generatorName + ':' + this.env.namespace(filename);
+			).forEach(filename => {
+				const ns = `${this._generatorName}:${this.env.namespace(filename)}`;
 				if(!(ns in this._extensions)){
 					this._extensions[ns] = [];
 				}
 				this._extensions[ns].push(path.join(pattern, filename));
-			}, this);
-		}, this);
+			});
+		});
 	},
 	/**
 	 * Search npm for every available generator extensions.
@@ -122,19 +118,17 @@ var ExtendableBase = YeomanBase.extend({
 	 * @return {Array} List of the generator modules path
 	 */
 	_searchForExtensions: function(searchPaths){
-		var modules = [];
+		const modules = [];
 
-		searchPaths.forEach(function(root){
+		searchPaths.forEach(root => {
 			if(!root){
 				return;
 			}
-			modules = globby.sync(
-				this._getExtensionPrefixes(),
-				{cwd: root}
-			).map(function(match){
-				return path.join(root, match);
-			}).concat(modules);
-		}.bind(this));
+			modules.push(...globby.sync(
+					this._getExtensionPrefixes(),
+					{cwd: root}
+				).map(match => path.join(root, match)));
+		});
 
 		return modules;
 	},
@@ -143,21 +137,21 @@ var ExtendableBase = YeomanBase.extend({
 	 *
 	 * @return {Array} lookup paths
 	 */
-	_getNpmPaths: function(process, directory){
-		var win32 = process.platform === 'win32';
-		var paths = [];
+	_getNpmPaths: function(proc = process, directory = __dirname){
+		const win32 = proc.platform === 'win32';
+		const paths = [];
 
 		// Add NVM prefix directory
-		if(process.env.NVM_PATH){
-			paths.push(path.join(path.dirname(process.env.NVM_PATH), 'node_modules'));
+		if(proc.env.NVM_PATH){
+			paths.push(path.join(path.dirname(proc.env.NVM_PATH), 'node_modules'));
 		}
 
 		// Adding global npm directories
 		// We tried using npm to get the global modules path, but it hasn't worked out
 		// because of bugs in the parseable implementation of `ls` command and mostly
 		// performance issues. So, we go with our best bet for now.
-		if(process.env.NODE_PATH){
-			paths = compact(process.env.NODE_PATH.split(path.delimiter)).concat(paths);
+		if(proc.env.NODE_PATH){
+			paths.push(...proc.env.NODE_PATH.split(path.delimiter).filter(path => !!path));
 		}
 
 		// global node_modules should be 4 or 2 directory up this one (most of the time)
@@ -165,26 +159,21 @@ var ExtendableBase = YeomanBase.extend({
 		paths.push(path.join(directory, '../..'));
 
 		// adds support for generator resolving when yeoman-generator has been linked
-		if(process.argv[1]){
-			paths.push(path.join(path.dirname(process.argv[1]), '../..'));
+		if(proc.argv[1]){
+			paths.push(path.join(path.dirname(proc.argv[1]), '../..'));
 		}
 
 		// Default paths for each system
 		if(win32){
-			paths.push(path.join(process.env.APPDATA, 'npm/node_modules'));
+			paths.push(path.join(proc.env.APPDATA, 'npm/node_modules'));
 		}else{
 			paths.push(path.join(path.sep, 'usr', 'lib', 'node_modules'));
 		}
 
 		// Walk up the CWD and add `node_modules/` folder lookup on each level
-		process.cwd().split(path.sep).forEach(function (part, i, parts) {
-			var lookup = path.join.apply(path, parts.slice(0, i + 1).concat(['node_modules']));
-
-			if(!win32){
-				lookup = path.sep + lookup;
-			}
-
-			paths.push(lookup);
+		proc.cwd().split(path.sep).forEach((part, i, parts) => {
+			const prefix = !win32 ? path.sep : '';
+			paths.push( prefix + path.join.apply(path, parts.slice(0, i + 1).concat(['node_modules'])));
 		});
 
 		return paths.reverse();
@@ -205,5 +194,4 @@ var ExtendableBase = YeomanBase.extend({
 	}
 } );
 
-// Exports the ExtendableBase for use.
-module.exports = ExtendableBase;
+export default Base;

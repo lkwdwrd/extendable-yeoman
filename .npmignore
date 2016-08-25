@@ -1,6 +1,6 @@
 node_modules
 !/test/tools/glob/node_modules
 coverage
-lib
+src
 temp
 .idea

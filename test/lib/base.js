@@ -2,7 +2,7 @@
 var helpers = require('yeoman-test');
 var path = require('path');
 var assert = require('chai').assert;
-var Base = require('../../lib/base');
+var Base = require('../../lib/base').default;
 
 describe('The base object', function () {
 	describe('has some properties', function(){

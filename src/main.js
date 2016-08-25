@@ -5,10 +5,13 @@
  * an object fully compatible with the main Yeoman object that can be used
  * in it's stead to create Yeoman generators that are extendable.
  */
-'use strict';
-var Yeoman = require('yeoman-generator');
+import Yeoman from 'yeoman-generator';
+import Base from './base';
 
-module.exports = {
+const Main = {
 	Yeoman: Yeoman,
-	Base: require('./base')
+	Base: Base
 };
+
+export default Main;
+export {Yeoman, Base};
