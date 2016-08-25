@@ -1,8 +1,7 @@
-'use strict';
-var helpers = require('yeoman-test');
-var path = require('path');
-var assert = require('chai').assert;
-var Base = require('../../lib/base').default;
+import helpers from 'yeoman-test';
+import path from 'path';
+import {assert} from 'chai';
+import Base from '../../lib/base';
 
 describe('The base object', function () {
 	describe('has some properties', function(){
