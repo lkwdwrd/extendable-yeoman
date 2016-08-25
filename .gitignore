@@ -2,5 +2,5 @@ node_modules
 !/test/tools/glob/node_modules
 coverage
 lib
+!/test/lib
 temp
-.idea
