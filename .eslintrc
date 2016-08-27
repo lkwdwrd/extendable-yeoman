@@ -48,10 +48,6 @@
       2,
       "single"
     ],
-    "strict": [
-      2,
-      "global"
-    ],
     "curly": [
       2,
       "all"

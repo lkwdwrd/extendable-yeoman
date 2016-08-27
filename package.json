@@ -21,14 +21,11 @@
     "node": ">=4.0.0"
   },
   "scripts": {
-    "prepublish": "npm run lint && npm run compile && npm test",
-    "pretest": "npm run lint && npm run lint-tests && npm run compile",
-    "test": "npm run lint-tests && mocha -R spec --compilers js:babel-register 'test/**/*.js'",
-    "precoverage": "npm run lint && npm run lint-tests && npm run compile",
-    "coverage": "istanbul cover node_modules/.bin/_mocha -- -R spec --compilers js:babel-register test/**/*.js",
-    "lint": "eslint src/**/*.js",
-    "lint-tests": "eslint test/lib/**/*.js",
-    "compile": "babel -d lib/ src/"
+      "pretest": "npm run lint && npm run lint:tests && npm run compile",
+      "test": "istanbul cover node_modules/.bin/_mocha -- --compilers js:babel-register --recursive test",
+      "lint": "eslint src",
+      "lint:tests": "eslint test",
+      "compile": "babel -d lib/ src/ --copy-files --source-maps both"
   },
   "files": [
     "lib"
@@ -54,7 +51,7 @@
     "chai": "^3.5.0",
     "eslint": "^3.3.1",
     "mocha": "^3.0.2",
-    "mocha-istanbul": "^0.3.0",
+    "istanbul": "^1.0.0-alpha.2",
     "yeoman-test": "^1.4.0"
   }
 }

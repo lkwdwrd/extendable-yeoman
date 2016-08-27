@@ -7,3 +7,8 @@ node_js:
   - v6
   - v5
   - v4
+addons:
+  code_climate:
+    repo_token: 57c22063f7c0e50069001ef7
+after_script:
+  - codeclimate-test-reporter < coverage/lcov.info

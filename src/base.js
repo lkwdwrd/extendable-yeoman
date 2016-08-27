@@ -19,7 +19,7 @@ const Base = Yeoman.Base.extend({
 	_extensionLookups: [
 		'.',
 		'extensions',
-		'lib/extensions',
+		'lib/extensions'
 	],
 	_extensions: {},
 	/**
