@@ -1,6 +1,8 @@
 # Extendable Yeoman
 
 [![Build Status](https://travis-ci.org/wp-cli/wp-cli.png?branch=master)](https://travis-ci.org/lkwdwrd/extendable-yeoman)
+[![Code Climate](https://codeclimate.com/github/lkwdwrd/extendable-yeoman/badges/gpa.svg)](https://codeclimate.com/github/lkwdwrd/extendable-yeoman)
+[![Test Coverage](https://codeclimate.com/github/lkwdwrd/extendable-yeoman/badges/coverage.svg)](https://codeclimate.com/github/lkwdwrd/extendable-yeoman/coverage)
 
 A layer between Yeoman and your generator that makes your generators easily extendable with secondary modules. All you have to do is provide events within your generator for the extensions to work from.
 
